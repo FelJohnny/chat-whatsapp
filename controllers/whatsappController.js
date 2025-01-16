@@ -1,3 +1,4 @@
+const { text } = require("body-parser");
 const https = require("https");
 require("dotenv").config();
 
@@ -53,7 +54,7 @@ const replyMessage = async (to, type, message) => {
       const data = {
         messaging_product: "whatsapp",
         to,
-        type: type,
+        type: "text",
         text: { body: message },
       };
 
