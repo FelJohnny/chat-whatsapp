@@ -8,6 +8,9 @@ router.post("/send-text", whatsappController.sendTextMessage);
 // Rota para enviar mensagem com botões
 router.post("/send-buttons", whatsappController.sendMessageWithButtons);
 
+// Rota para enviar mensagem com botões de share
+router.post("/send-buttons-share", whatsappController.sendPersonalizedButtons);
+
 // Rota para enviar mensagem com template hello_world
 router.post("/send-template", whatsappController.sendTemplateMessage);
 

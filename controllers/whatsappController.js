@@ -173,6 +173,73 @@ exports.sendMessageWithButtons = async (req, res) => {
   }
 };
 
+exports.sendPersonalizedButtons = async (req, res) => {
+  const { to, name } = req.body; // Recebe o número do destinatário e o nome do usuário
+
+  if (!to || !name) {
+    return res.status(400).json({
+      error: 'Os campos "to" e "name" são obrigatórios.',
+    });
+  }
+
+  try {
+    const data = {
+      messaging_product: "whatsapp",
+      to,
+      type: "interactive",
+      interactive: {
+        type: "button",
+        header: {
+          type: "text",
+          text: "Legal, é um prazer te receber por aqui!",
+        },
+        body: {
+          text: `Prometo que não pergunto isso de novo. *Confirma que seu nome é:*\n${name}?`,
+        },
+        action: {
+          buttons: [
+            {
+              type: "reply",
+              reply: {
+                id: "confirm_name",
+                title: "Sim, esse é meu nome",
+              },
+            },
+            {
+              type: "reply",
+              reply: {
+                id: "change_name",
+                title: "Não, preciso trocar",
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    const headers = {
+      Authorization: `Bearer ${ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+    };
+
+    const response = await sendHttpsRequest(API_URL, "POST", data, headers);
+
+    res.status(200).json({
+      message: "Mensagem personalizada com botões enviada com sucesso!",
+      data: response,
+    });
+  } catch (error) {
+    console.error(
+      "Erro ao enviar mensagem personalizada com botões:",
+      error.message
+    );
+    res.status(500).json({
+      error: "Erro ao enviar mensagem personalizada com botões.",
+      details: error.message,
+    });
+  }
+};
+
 // **3. Enviar mensagens com template**
 exports.sendTemplateMessage = async (req, res) => {
   const { to } = req.body;
