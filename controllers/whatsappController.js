@@ -45,6 +45,35 @@ const sendHttpsRequest = (url, method, data, headers) => {
   });
 };
 
+exports.replyMessage = async (to, type, message) => {
+  if ((!to || !message, type)) {
+    return res.status(400).json({
+      error: 'Os campos "to" e "message" são obrigatórios.',
+    });
+  }
+  try {
+    const data = {
+      messaging_product: "whatsapp",
+      to,
+      type: type,
+      text: { body: message },
+    };
+
+    const headers = {
+      Authorization: `Bearer ${ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+    };
+
+    const response = await sendHttpsRequest(API_URL, "POST", data, headers);
+    console.log({
+      message: "Mensagem de texto respondida com sucesso!",
+      data: response,
+    });
+  } catch (error) {
+    console.error("Erro ao enviar mensagem de texto:", error.message);
+  }
+};
+
 // **1. Enviar mensagens de texto simples**
 exports.sendTextMessage = async (req, res) => {
   const { to, message } = req.body;
@@ -185,13 +214,8 @@ exports.sendTemplateMessage = async (req, res) => {
   }
 };
 
-// Set para armazenar os IDs de mensagens processadas
-const processedMessageIds = new Set();
-
 // Webhook para lidar com mensagens recebidas
 exports.webhook = (req, res) => {
-  console.log("teste");
-
   try {
     const body = req.body;
 
@@ -206,29 +230,14 @@ exports.webhook = (req, res) => {
               const messageId = message.id || "id não identificado";
               const messageType = message.type || "tipo não identificado";
 
-              // Verifica se a mensagem já foi processada
-              if (processedMessageIds.has(messageId)) {
-                console.log(
-                  `Mensagem ${messageId} já processada. Ignorando...`
-                );
-                return;
-              }
-
-              // Marca a mensagem como processada
-              processedMessageIds.add(messageId);
-
               // Lida com mensagens de texto
               if (messageType === "text" && message.text) {
                 const messageBody = message.text.body || "mensagem vazia";
                 console.log(
                   `Mensagem de texto recebida de ${from}: ${messageBody}`
                 );
-
-                // Responder automaticamente
-                sendTextMessage(
-                  from,
-                  `Recebemos sua mensagem: "${messageBody}"`
-                );
+                //reponde mensagem
+                replyMessage("5511951170016", messageType, "ola tudo bem?");
               }
               // Lida com respostas de botões
               else if (messageType === "interactive" && message.interactive) {
@@ -239,9 +248,8 @@ exports.webhook = (req, res) => {
                 console.log(
                   `Resposta de botão recebida de ${from}: ID=${replyId}, Título=${replyTitle}`
                 );
-
-                // Responder automaticamente à interação
-                sendTextMessage(from, `Você escolheu: "${replyTitle}"`);
+                //reponde mensagem
+                replyMessage("5511951170016", messageType, "ola tudo bem?");
               } else {
                 console.log(`Tipo de mensagem não tratado: ${messageType}`);
               }
