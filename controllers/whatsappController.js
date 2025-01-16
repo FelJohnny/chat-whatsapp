@@ -182,47 +182,42 @@ exports.sendTemplateMessage = async (req, res) => {
   }
 };
 
-// Controlador para o webhook
+// Controlador para responder o webhook
 exports.webhook = (req, res) => {
   try {
-    const data = req.body;
+    const body = req.body;
 
-    console.log("Webhook recebido:", JSON.stringify(data, null, 2));
-
-    if (data.object === "whatsapp_business_account") {
-      data.entry.forEach((entry) => {
+    // Verifica se o webhook é de um evento do WhatsApp Business API
+    if (body.object === "whatsapp_business_account") {
+      body.entry.forEach((entry) => {
+        // Itera sobre as alterações (changes)
         entry.changes.forEach((change) => {
           if (change.field === "messages") {
-            const message = change.value.messages[0];
+            // Obtém a mensagem recebida
+            const messages = change.value.messages;
+            const contacts = change.value.contacts;
 
-            if (message && message.type === "text") {
-              const userMessage = message.text.body;
-              const from = message.from;
-
-              console.log(`Mensagem recebida de ${from}: ${userMessage}`);
+            messages.forEach((message) => {
+              console.log("Mensagem recebida:", message);
 
               // Exemplo: Responder automaticamente
-              sendHttpsRequest(
-                API_URL,
-                "POST",
-                {
-                  messaging_product: "whatsapp",
-                  to: from,
-                  type: "text",
-                  text: { body: `Você disse: "${userMessage}"` },
-                },
-                {
-                  Authorization: `Bearer ${ACCESS_TOKEN}`,
-                  "Content-Type": "application/json",
-                }
-              );
-            }
+              if (message.type === "text") {
+                const userMessage = message.text.body;
+                const from = message.from; // Número do usuário que enviou a mensagem
+
+                console.log(`Mensagem recebida de ${from}: ${userMessage}`);
+
+                // Chame aqui uma função para responder a mensagem
+                // sendWhatsAppMessage(from, "Recebemos sua mensagem!");
+              }
+            });
           }
         });
       });
     }
 
-    res.sendStatus(200); // Confirma recebimento
+    // Responde com 200 OK para confirmar o recebimento
+    res.sendStatus(200);
   } catch (error) {
     console.error("Erro ao processar webhook:", error.message);
     res.sendStatus(500);
