@@ -197,12 +197,12 @@ exports.webhook = (req, res) => {
       body.entry.forEach((entry) => {
         entry.changes.forEach((change) => {
           if (change.field === "messages") {
-            const messages = change.value.messages;
+            const messages = change.value.messages || [];
 
             messages.forEach((message) => {
-              const from = message.from; // Número do remetente
-              const messageId = message.id; // ID único da mensagem
-              const messageType = message.type;
+              const from = message.from || "número não identificado";
+              const messageId = message.id || "id não identificado";
+              const messageType = message.type || "tipo não identificado";
 
               // Verifica se a mensagem já foi processada
               if (processedMessageIds.has(messageId)) {
@@ -215,8 +215,9 @@ exports.webhook = (req, res) => {
               // Marca a mensagem como processada
               processedMessageIds.add(messageId);
 
-              if (messageType === "text") {
-                const messageBody = message.text.body;
+              // Lida com mensagens de texto
+              if (messageType === "text" && message.text) {
+                const messageBody = message.text.body || "mensagem vazia";
                 console.log(
                   `Mensagem de texto recebida de ${from}: ${messageBody}`
                 );
@@ -226,11 +227,12 @@ exports.webhook = (req, res) => {
                   from,
                   `Recebemos sua mensagem: "${messageBody}"`
                 );
-              } else if (messageType === "interactive") {
-                // Tratando respostas de botões
-                const buttonReply = message.interactive.button_reply;
-                const replyId = buttonReply?.id || "null";
-                const replyTitle = buttonReply?.title || "null";
+              }
+              // Lida com respostas de botões
+              else if (messageType === "interactive" && message.interactive) {
+                const buttonReply = message.interactive.button_reply || {};
+                const replyId = buttonReply.id || "null";
+                const replyTitle = buttonReply.title || "null";
 
                 console.log(
                   `Resposta de botão recebida de ${from}: ID=${replyId}, Título=${replyTitle}`
