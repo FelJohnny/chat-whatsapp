@@ -45,7 +45,7 @@ const sendHttpsRequest = (url, method, data, headers) => {
   });
 };
 
-// Função para enviar mensagens de texto
+// **1. Enviar mensagens de texto simples**
 exports.sendTextMessage = async (req, res) => {
   const { to, message } = req.body;
 
@@ -83,7 +83,7 @@ exports.sendTextMessage = async (req, res) => {
   }
 };
 
-// Função para enviar mensagens com botões
+// **2. Enviar mensagens com botões**
 exports.sendMessageWithButtons = async (req, res) => {
   const { to } = req.body;
 
@@ -144,7 +144,7 @@ exports.sendMessageWithButtons = async (req, res) => {
   }
 };
 
-// Função para enviar mensagens com template "hello_world"
+// **3. Enviar mensagens com template**
 exports.sendTemplateMessage = async (req, res) => {
   const { to } = req.body;
 
@@ -185,7 +185,7 @@ exports.sendTemplateMessage = async (req, res) => {
   }
 };
 
-// Webhook para lidar com mensagens recebidas
+// **4. Webhook para lidar com mensagens recebidas**
 exports.webhook = (req, res) => {
   try {
     const body = req.body;
@@ -198,16 +198,33 @@ exports.webhook = (req, res) => {
 
             messages.forEach((message) => {
               const from = message.from;
-              const messageBody = message.text ? message.text.body : null;
+              const messageType = message.type;
 
-              console.log(`Mensagem recebida de ${from}: ${messageBody}`);
+              if (messageType === "text") {
+                const messageBody = message.text.body;
+                console.log(
+                  `Mensagem de texto recebida de ${from}: ${messageBody}`
+                );
 
-              if (message.type === "text") {
                 // Responder automaticamente
                 sendTextMessage(
                   from,
                   `Recebemos sua mensagem: "${messageBody}"`
                 );
+              } else if (messageType === "interactive") {
+                // Tratando respostas de botões
+                const buttonReply = message.interactive.button_reply;
+                const replyId = buttonReply?.id || "null";
+                const replyTitle = buttonReply?.title || "null";
+
+                console.log(
+                  `Resposta de botão recebida de ${from}: ID=${replyId}, Título=${replyTitle}`
+                );
+
+                // Responder automaticamente à interação
+                sendTextMessage(from, `Você escolheu: "${replyTitle}"`);
+              } else {
+                console.log(`Tipo de mensagem não tratado: ${messageType}`);
               }
             });
           }
@@ -222,7 +239,7 @@ exports.webhook = (req, res) => {
   }
 };
 
-// Verificação do webhook
+// **5. Verificação do webhook**
 exports.verifyWebhook = (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
