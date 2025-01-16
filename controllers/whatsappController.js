@@ -46,31 +46,30 @@ const sendHttpsRequest = (url, method, data, headers) => {
 };
 
 const replyMessage = async (to, type, message) => {
-  if ((!to || !message, type)) {
-    return res.status(400).json({
-      error: 'Os campos "to" e "message" são obrigatórios.',
-    });
-  }
-  try {
-    const data = {
-      messaging_product: "whatsapp",
-      to,
-      type: type,
-      text: { body: message },
-    };
+  if (!to || !message || !type) {
+    console.log('Os campos "to", type e "message" são obrigatórios.');
+  } else {
+    try {
+      const data = {
+        messaging_product: "whatsapp",
+        to,
+        type: type,
+        text: { body: message },
+      };
 
-    const headers = {
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "Content-Type": "application/json",
-    };
+      const headers = {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      };
 
-    const response = await sendHttpsRequest(API_URL, "POST", data, headers);
-    console.log({
-      message: "Mensagem de texto respondida com sucesso!",
-      data: response,
-    });
-  } catch (error) {
-    console.error("Erro ao enviar mensagem de texto:", error.message);
+      const response = await sendHttpsRequest(API_URL, "POST", data, headers);
+      console.log({
+        message: "Mensagem de texto respondida com sucesso!",
+        data: response,
+      });
+    } catch (error) {
+      console.error("Erro ao enviar mensagem de texto:", error.message);
+    }
   }
 };
 
