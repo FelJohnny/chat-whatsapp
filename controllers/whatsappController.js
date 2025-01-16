@@ -5,7 +5,7 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN || "SEU_ACCESS_TOKEN_AQUI";
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "SEU_VERIFY_TOKEN_AQUI";
 const API_URL = process.env.API_URL;
 
-// Função para enviar requisições HTTPS
+// Função genérica para enviar requisições HTTPS
 const sendHttpsRequest = (url, method, data, headers) => {
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
@@ -45,9 +45,10 @@ const sendHttpsRequest = (url, method, data, headers) => {
   });
 };
 
+// Função para enviar mensagens de texto
 exports.sendTextMessage = async (req, res) => {
   const { to, message } = req.body;
-  console.log(ACCESS_TOKEN);
+
   if (!to || !message) {
     return res.status(400).json({
       error: 'Os campos "to" e "message" são obrigatórios.',
@@ -82,6 +83,7 @@ exports.sendTextMessage = async (req, res) => {
   }
 };
 
+// Função para enviar mensagens com botões
 exports.sendMessageWithButtons = async (req, res) => {
   const { to } = req.body;
 
@@ -142,6 +144,7 @@ exports.sendMessageWithButtons = async (req, res) => {
   }
 };
 
+// Função para enviar mensagens com template "hello_world"
 exports.sendTemplateMessage = async (req, res) => {
   const { to } = req.body;
 
@@ -182,33 +185,29 @@ exports.sendTemplateMessage = async (req, res) => {
   }
 };
 
-// Controlador para responder o webhook
+// Webhook para lidar com mensagens recebidas
 exports.webhook = (req, res) => {
   try {
     const body = req.body;
 
-    // Verifica se o webhook é de um evento do WhatsApp Business API
     if (body.object === "whatsapp_business_account") {
       body.entry.forEach((entry) => {
-        // Itera sobre as alterações (changes)
         entry.changes.forEach((change) => {
           if (change.field === "messages") {
-            // Obtém a mensagem recebida
             const messages = change.value.messages;
-            const contacts = change.value.contacts;
 
             messages.forEach((message) => {
-              console.log("Mensagem recebida:", message);
+              const from = message.from;
+              const messageBody = message.text ? message.text.body : null;
 
-              // Exemplo: Responder automaticamente
+              console.log(`Mensagem recebida de ${from}: ${messageBody}`);
+
               if (message.type === "text") {
-                const userMessage = message.text.body;
-                const from = message.from; // Número do usuário que enviou a mensagem
-
-                console.log(`Mensagem recebida de ${from}: ${userMessage}`);
-
-                // Chame aqui uma função para responder a mensagem
-                // sendWhatsAppMessage(from, "Recebemos sua mensagem!");
+                // Responder automaticamente
+                sendTextMessage(
+                  from,
+                  `Recebemos sua mensagem: "${messageBody}"`
+                );
               }
             });
           }
@@ -216,15 +215,14 @@ exports.webhook = (req, res) => {
       });
     }
 
-    // Responde com 200 OK para confirmar o recebimento
-    res.sendStatus(200);
+    res.sendStatus(200); // Confirma o recebimento
   } catch (error) {
     console.error("Erro ao processar webhook:", error.message);
     res.sendStatus(500);
   }
 };
 
-// Controlador para verificação do webhook
+// Verificação do webhook
 exports.verifyWebhook = (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
