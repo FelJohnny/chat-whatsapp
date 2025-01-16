@@ -185,7 +185,10 @@ exports.sendTemplateMessage = async (req, res) => {
   }
 };
 
-// **4. Webhook para lidar com mensagens recebidas**
+// Set para armazenar os IDs de mensagens processadas
+const processedMessageIds = new Set();
+
+// Webhook para lidar com mensagens recebidas
 exports.webhook = (req, res) => {
   try {
     const body = req.body;
@@ -197,8 +200,20 @@ exports.webhook = (req, res) => {
             const messages = change.value.messages;
 
             messages.forEach((message) => {
-              const from = message.from;
+              const from = message.from; // Número do remetente
+              const messageId = message.id; // ID único da mensagem
               const messageType = message.type;
+
+              // Verifica se a mensagem já foi processada
+              if (processedMessageIds.has(messageId)) {
+                console.log(
+                  `Mensagem ${messageId} já processada. Ignorando...`
+                );
+                return;
+              }
+
+              // Marca a mensagem como processada
+              processedMessageIds.add(messageId);
 
               if (messageType === "text") {
                 const messageBody = message.text.body;
