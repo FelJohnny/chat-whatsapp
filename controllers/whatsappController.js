@@ -190,6 +190,8 @@ const processedMessageIds = new Set();
 
 // Webhook para lidar com mensagens recebidas
 exports.webhook = (req, res) => {
+  console.log("teste");
+
   try {
     const body = req.body;
 
