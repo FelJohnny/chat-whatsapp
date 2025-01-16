@@ -45,7 +45,7 @@ const sendHttpsRequest = (url, method, data, headers) => {
   });
 };
 
-exports.replyMessage = async (to, type, message) => {
+const replyMessage = async (to, type, message) => {
   if ((!to || !message, type)) {
     return res.status(400).json({
       error: 'Os campos "to" e "message" são obrigatórios.',
@@ -249,7 +249,11 @@ exports.webhook = (req, res) => {
                   `Resposta de botão recebida de ${from}: ID=${replyId}, Título=${replyTitle}`
                 );
                 //reponde mensagem
-                replyMessage("5511951170016", messageType, "ola tudo bem?");
+                replyMessage(
+                  "5511951170016",
+                  messageType,
+                  `voce selecionou ${replyTitle}`
+                );
               } else {
                 console.log(`Tipo de mensagem não tratado: ${messageType}`);
               }
