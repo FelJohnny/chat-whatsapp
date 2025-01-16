@@ -5,7 +5,7 @@ const routes = require("./routes/index.js"); // Importa as rotas
 const app = express();
 
 // Middlewares
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Rotas
 app.use("/", routes);
